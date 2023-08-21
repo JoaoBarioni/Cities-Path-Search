@@ -1,5 +1,4 @@
 #include <iostream>
-#include <queue>
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
@@ -8,85 +7,59 @@
 
 using namespace std;
 
-bool buscarCaminho(const string &origem, const string &destino, const unordered_map<string, vector<string>> &grafo, unordered_map<string, string> &pais)
-{
-    queue<string> fila;
-    unordered_set<string> visitados;
+void encontrarTodosCaminhos(const string& cidadeAtual, const string& destino, const unordered_map<string, vector<string>>& grafo, unordered_set<string>& visitados, stack<string>& caminhoAtual) {
+    visitados.insert(cidadeAtual);
+    caminhoAtual.push(cidadeAtual);
 
-    fila.push(origem);
-    visitados.insert(origem);
-
-    while (!fila.empty())
-    {
-        string cidadeAtual = fila.front();
-        fila.pop();
-
-        if (cidadeAtual == destino)
-        {
-            return true;
+    if (cidadeAtual == destino) {
+        stack<string> caminhoTemp = caminhoAtual;
+        while (!caminhoTemp.empty()) {
+            cout << caminhoTemp.top();
+            caminhoTemp.pop();
+            if (!caminhoTemp.empty()) {
+                cout << " -> ";
+            }
         }
-
-        if (grafo.find(cidadeAtual) != grafo.end())
-        {
-            const vector<string> &vizinhos = grafo.at(cidadeAtual);
-            for (const string &vizinho : vizinhos)
-            {
-                if (visitados.find(vizinho) == visitados.end())
-                {
-                    fila.push(vizinho);
-                    visitados.insert(vizinho);
-                    pais[vizinho] = cidadeAtual;
+        cout << endl;
+    } else {
+        if (grafo.find(cidadeAtual) != grafo.end()) {
+            const vector<string>& vizinhos = grafo.at(cidadeAtual);
+            for (const string& vizinho : vizinhos) {
+                if (visitados.find(vizinho) == visitados.end()) {
+                    encontrarTodosCaminhos(vizinho, destino, grafo, visitados, caminhoAtual);
                 }
             }
         }
     }
 
-    return false;
+    visitados.erase(cidadeAtual);
+    caminhoAtual.pop();
 }
 
-int main()
-{
+int main() {
     unordered_map<string, vector<string>> grafo = {
-        {"Curitiba", {"Paranaguá", "Ponta Grossa"}},
-        {"Ponta Grossa", {"Jacarezinho", "Guarapuava", "União da Vitória"}},
-        {"Guarapuava", {"Francisco Beltrão", "Campo Mourão"}},
-        {"União da Vitória", {}},
+        {"Curitiba", {"Paranagua", "Ponta Grossa"}},
+        {"Ponta Grossa", {"Jacarezinho", "Guarapuava", "Uniao da Vitoria"}},
+        
+        {"Guarapuava", {"Francisco Beltrao", "Campo Mourao"}},
         {"Jacarezinho", {"Londrina"}},
-        {"Francisco Beltrão", {"Toledo"}},
-        {"Campo Mourão", {"Toledo", "Maringá"}},
-        {"Maringá", {"Londrina", "Toledo"}}};
+        {"Uniao da Vitoria", {}},
 
-    string origem = "Curitiba";
-    string destino = "Toledo";
+        {"Francisco Beltrao", {"Toledo"}},
+        {"Campo Mourao", {"Toledo", "Maringa"}},
+        {"Londrina", {"Maringa"}},
 
-    unordered_map<string, string> pais;
-    if (buscarCaminho(origem, destino, grafo, pais))
-    {
-        stack<string> caminho;
-        string cidade = destino;
-        while (cidade != origem)
-        {
-            caminho.push(cidade);
-            cidade = pais[cidade];
-        }
-        caminho.push(origem);
+        {"Maringa", {"Toledo"}}
+    };
 
-        cout << "Caminho encontrado de " << origem << " a " << destino << ":" << endl;
-        while (!caminho.empty())
-        {
-            cout << caminho.top();
-            caminho.pop();
-            if (!caminho.empty())
-            {
-                cout << " -> ";
-            }
-        }
-        cout << endl;
-    }
-    else
-    {
-        cout << "Não há caminho de " << origem << " a " << destino << "." << endl;
-    }
+    string destino = "Curitiba";
+    string origem = "Toledo";
+
+    unordered_set<string> visitados;
+    stack<string> caminhoAtual;
+
+    cout << "Caminhos encontrados de " << destino << " a " << origem << ":" << endl;
+    encontrarTodosCaminhos(destino, origem, grafo, visitados, caminhoAtual);
 
     return 0;
 }
